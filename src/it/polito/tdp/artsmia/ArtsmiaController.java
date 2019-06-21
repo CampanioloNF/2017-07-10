@@ -5,7 +5,12 @@
 package it.polito.tdp.artsmia;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.artsmia.model.Model;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -22,7 +27,7 @@ public class ArtsmiaController {
 	private URL location;
 
 	@FXML // fx:id="boxLUN"
-	private ChoiceBox<?> boxLUN; // Value injected by FXMLLoader
+	private ChoiceBox<Integer> boxLUN; // Value injected by FXMLLoader
 
 	@FXML // fx:id="btnCalcolaComponenteConnessa"
 	private Button btnCalcolaComponenteConnessa; // Value injected by FXMLLoader
@@ -39,15 +44,76 @@ public class ArtsmiaController {
 	@FXML // fx:id="txtResult"
 	private TextArea txtResult; // Value injected by FXMLLoader
 
+	private Model model;
+
 	@FXML
 	void doAnalizzaOggetti(ActionEvent event) {
-		txtResult.setText("doAnalizzaOggetti");
+		
+		    txtObjectId.setDisable(false);
+		    btnCalcolaComponenteConnessa.setDisable(false);
+		    btnCercaOggetti.setDisable(false);
+		    boxLUN.setDisable(false);
+		    
+		    model.creaGrafo();
+		    
+		    txtResult.setText("Grafo creato : "+model.getGraphSize()+" vertici, "+ model.getNumberEdges()+" archi.");
+		    
+		   // btnAnalizzaOggetti.setDisable(true);
 	}
 
 	@FXML
 	void doCalcolaComponenteConnessa(ActionEvent event) {
-		txtResult.setText("doCalcolaComponenteConnessa");
+		
+		txtResult.clear();
+		
+		String input = txtObjectId.getText();
+		
+		if(!input.equals("")) {
+			if(input.matches("[0-9]+")) {
+				
+				int sizeComponente = model.getComponenteConnessa(Integer.parseInt(input));
+				
+				if(sizeComponente<0) {
+					txtResult.setText("Errore! l'oggetto cercato non esiste..");
+					return ;
+				}
+				else {
+					
+					if(sizeComponente ==1) {
+						txtResult.appendText("L'oggetto selezionato è isolato... si prega di selezionare un'altro oggetto");
+						return;
+					}
+						
+					
+			    	txtResult.setText("La componente connessa, avente vertice: "+input+" ha dimensione: "+sizeComponente);
+			    	
+			    	caricaBox(sizeComponente);
+				}
+			}
+			else {
+				txtResult.setText("L'ID è composto dai soli caratteri alfanumerici");
+				return ;
+	              	}
+			}
+		else {
+			txtResult.setText("Si prega di inserire un ID di un oggetto, grazie");
+			return ;
+		}
+			
+		//txtObjectId.setEditable(false);
+		
 	}
+
+	private void caricaBox(int sizeComponente) {
+	
+		List<Integer> result = new ArrayList<>();
+		for(Integer i = 2; i<=sizeComponente;i++)
+			result.add(i);
+		
+		boxLUN.setItems(FXCollections.observableList(result));
+	
+	}
+	
 
 	@FXML
 	void doCercaOggetti(ActionEvent event) {
@@ -62,6 +128,16 @@ public class ArtsmiaController {
 		assert btnAnalizzaOggetti != null : "fx:id=\"btnAnalizzaOggetti\" was not injected: check your FXML file 'Artsmia.fxml'.";
 		assert txtObjectId != null : "fx:id=\"txtObjectId\" was not injected: check your FXML file 'Artsmia.fxml'.";
 		assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Artsmia.fxml'.";
+		
+	    txtObjectId.setDisable(true);
+	    btnCalcolaComponenteConnessa.setDisable(true);
+	    btnCercaOggetti.setDisable(true);
+		
 
+	}
+
+	public void setModel(Model model) {
+		this.model = model;
+		
 	}
 }

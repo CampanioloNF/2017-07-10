@@ -2,33 +2,35 @@ package it.polito.tdp.artsmia.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import com.mchange.v2.c3p0.DataSources;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class DBConnect {
 
-	private static String jdbcURL = "jdbc:mysql://localhost/artsmia?user=root";
-
-	private static DataSource ds;
+	private static String jdbcURL = "jdbc:mysql://localhost/artsmia?serverTimezone=Europe/Rome";
+	private static HikariDataSource ds;
+	
 
 	public static Connection getConnection() {
 
 		if (ds == null) {
-			// initialize DataSource
-			try {
-				ds = DataSources.pooledDataSource(DataSources.unpooledDataSource(jdbcURL));
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.exit(1);
-			}
+			HikariConfig config = new HikariConfig();
+			config.setJdbcUrl(jdbcURL);
+			config.setUsername("root");
+			config.setPassword("corbezzoli95");
+			
+			// configurazione MySQL
+			config.addDataSourceProperty("cachePrepStmts", "true");
+			config.addDataSourceProperty("prepStmtCacheSize", "250");
+			config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+			
+			ds = new HikariDataSource(config);
 		}
 
 		try {
-			Connection c = ds.getConnection();
-			return c;
+
+			return ds.getConnection();
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
